@@ -4,8 +4,8 @@
 
 // Definição das configurações (tornando global)
 window.CONFIG = {
-    SUPABASE_URL: 'https://SEU_PROJETO.supabase.co',  // Substitua pela sua URL
-    SUPABASE_ANON_KEY: 'SUA_CHAVE_ANON_AQUI',          // Substitua pela sua chave
+    SUPABASE_URL: 'https://cccukpzwbdaycdwmvdyp.supabase.co',  // Substitua pela sua URL
+    SUPABASE_ANON_KEY: 'sb_publishable_ygGdsS-kgYQN3KOXfB7pSQ_QknXJgah',          // Substitua pela sua chave
     STORAGE_KEY: 'odontogest_pacientes'
 };
 
