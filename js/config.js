@@ -10,8 +10,8 @@
     // CONFIGURAÇÕES - SUBSTITUA PELAS SUAS
     // ============================================================
     window.APP.CONFIG = {
-        SUPABASE_URL: 'https://SEU_PROJETO.supabase.co',
-        SUPABASE_ANON_KEY: 'SUA_CHAVE_ANON_AQUI',
+        SUPABASE_URL: 'https://cccukpzwbdaycdwmvdyp.supabase.co',
+        SUPABASE_ANON_KEY: 'sb_publishable_ygGdsS-kgYQN3KOXfB7pSQ_QknXJgah',
         STORAGE_KEY: 'odontogest_pacientes'
     };
 
