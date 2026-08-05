@@ -48,8 +48,7 @@
     };
 
     // ============================================================
-    // POPULA OS <select> DE STATUS A PARTIR DE APP.STATUS_MAP
-    // (fonte única — evita duplicar as opções no HTML)
+    // POPULA OS <select> DE STATUS
     // ============================================================
     APP.popularStatusSelects = function() {
         const STATUS_MAP = APP.STATUS_MAP || {};
