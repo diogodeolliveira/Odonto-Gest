@@ -1,5 +1,5 @@
 // ============================================================
-// AUTENTICAÇÃO - APENAS LOGIN (SEM REGISTRO)
+// AUTENTICAÇÃO - LOGIN MANUAL (SEM SUPABASE AUTH)
 // ============================================================
 (function() {
 
@@ -23,44 +23,38 @@
     const usuarioLogado = document.getElementById('usuarioLogado');
 
     // ============================================================
+    // SESSÃO (salva no localStorage)
+    // ============================================================
+    function salvarSessao(usuario) {
+        localStorage.setItem('odontogest_sessao', JSON.stringify(usuario));
+    }
+
+    function carregarSessao() {
+        try {
+            const data = localStorage.getItem('odontogest_sessao');
+            return data ? JSON.parse(data) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function limparSessao() {
+        localStorage.removeItem('odontogest_sessao');
+    }
+
+    // ============================================================
     // VERIFICAÇÃO DE SESSÃO
     // ============================================================
     APP.verificarSessao = async function() {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                APP.usuarioAtual = session.user;
-                await carregarUsuarioAtual();
-                mostrarSistema();
-                return true;
-            }
-            mostrarLogin();
-            return false;
-        } catch (e) {
-            console.error('❌ Erro ao verificar sessão:', e);
-            mostrarLogin();
-            return false;
+        const sessao = carregarSessao();
+        if (sessao) {
+            APP.usuarioAtual = sessao;
+            mostrarSistema();
+            return true;
         }
+        mostrarLogin();
+        return false;
     };
-
-    // ============================================================
-    // CARREGAR DADOS DO USUÁRIO ATUAL
-    // ============================================================
-    async function carregarUsuarioAtual() {
-        try {
-            const { data, error } = await supabase
-                .from('usuarios')
-                .select('username, nome_completo, perfil')
-                .eq('id', APP.usuarioAtual.id)
-                .single();
-
-            if (error) throw error;
-            APP.usuarioDados = data;
-        } catch (e) {
-            console.warn('⚠️ Não foi possível carregar dados do usuário:', e);
-            APP.usuarioDados = null;
-        }
-    }
 
     function mostrarLogin() {
         if (loginContainer) loginContainer.style.display = 'flex';
@@ -75,9 +69,7 @@
         if (sistemaPrincipal) sistemaPrincipal.style.display = 'block';
         
         if (APP.usuarioAtual && usuarioLogado) {
-            const nome = APP.usuarioDados?.nome_completo || APP.usuarioAtual.email;
-            const username = APP.usuarioDados?.username || '';
-            usuarioLogado.innerHTML = `<i class="fas fa-user"></i> ${APP.escapeHTML ? APP.escapeHTML(nome) : nome} (${APP.escapeHTML ? APP.escapeHTML(username) : username})`;
+            usuarioLogado.innerHTML = `<i class="fas fa-user"></i> ${APP.escapeHTML ? APP.escapeHTML(APP.usuarioAtual.nome_completo) : APP.usuarioAtual.nome_completo}`;
         }
         
         if (typeof APP.popularStatusSelects === 'function') {
@@ -89,7 +81,7 @@
     }
 
     // ============================================================
-    // FUNÇÃO DE LOGIN (POR USERNAME)
+    // FUNÇÃO DE LOGIN (BUSCA NA TABELA usuarios)
     // ============================================================
     async function fazerLogin() {
         console.log('🟢 Tentando login...');
@@ -97,7 +89,7 @@
         const password = loginPassword.value.trim();
 
         if (!username || !password) {
-            loginError.textContent = '❌ Preencha apelido e senha';
+            loginError.textContent = '❌ Preencha usuário e senha';
             loginError.style.display = 'block';
             return;
         }
@@ -105,61 +97,35 @@
         loginError.style.display = 'none';
         loginSuccess.style.display = 'none';
         btnLogin.disabled = true;
-        const textoOriginal = btnLogin.innerHTML;
         btnLogin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
 
         try {
-            // 1. Buscar o email associado ao username
-            const { data: usuario, error: userError } = await supabase
+            // 🔍 Busca o usuário no banco de dados
+            const { data: usuario, error } = await supabase
                 .from('usuarios')
-                .select('id')
+                .select('*')
                 .eq('username', username)
                 .eq('ativo', true)
                 .single();
 
-            if (userError) {
-                console.error('❌ Usuário não encontrado:', userError);
-                loginError.textContent = '❌ Apelido ou senha incorretos';
+            if (error || !usuario) {
+                console.error('❌ Usuário não encontrado:', error);
+                loginError.textContent = '❌ Usuário ou senha incorretos';
                 loginError.style.display = 'block';
                 return;
             }
 
-            if (!usuario) {
-                loginError.textContent = '❌ Apelido ou senha incorretos';
+            // 🔐 Verifica a senha
+            if (usuario.senha !== password) {
+                loginError.textContent = '❌ Usuário ou senha incorretos';
                 loginError.style.display = 'block';
                 return;
             }
 
-            // 2. Buscar o email do usuário no auth.users
-            const { data: authUser, error: authError } = await supabase
-                .from('auth.users')
-                .select('email')
-                .eq('id', usuario.id)
-                .single();
-
-            if (authError) {
-                console.error('❌ Erro ao buscar email:', authError);
-                loginError.textContent = '❌ Erro ao autenticar. Tente novamente.';
-                loginError.style.display = 'block';
-                return;
-            }
-
-            // 3. Fazer login com o email encontrado
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: authUser.email,
-                password: password
-            });
-
-            if (error) {
-                console.error('❌ Erro no login:', error);
-                loginError.textContent = '❌ Apelido ou senha incorretos';
-                loginError.style.display = 'block';
-                return;
-            }
-
-            console.log('✅ Login bem-sucedido!', data.user);
-            APP.usuarioAtual = data.user;
-            await carregarUsuarioAtual();
+            // ✅ Login bem-sucedido
+            console.log('✅ Login bem-sucedido!', usuario);
+            APP.usuarioAtual = usuario;
+            salvarSessao(usuario);
             
             loginSuccess.textContent = '✅ Login realizado com sucesso!';
             loginSuccess.style.display = 'block';
@@ -174,7 +140,7 @@
             loginError.style.display = 'block';
         } finally {
             btnLogin.disabled = false;
-            btnLogin.innerHTML = textoOriginal;
+            btnLogin.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
         }
     }
 
@@ -182,20 +148,13 @@
     // FUNÇÃO DE LOGOUT
     // ============================================================
     async function fazerLogout() {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            if (typeof APP.mostrarToast === 'function') {
-                APP.mostrarToast('❌ Erro ao sair: ' + error.message, '#7a3a3a');
-            }
-        } else {
-            APP.usuarioAtual = null;
-            APP.usuarioDados = null;
-            APP.pacientes = [];
-            if (typeof APP.mostrarToast === 'function') {
-                APP.mostrarToast('👋 Você saiu do sistema', '#1a4a58');
-            }
-            mostrarLogin();
+        limparSessao();
+        APP.usuarioAtual = null;
+        APP.pacientes = [];
+        if (typeof APP.mostrarToast === 'function') {
+            APP.mostrarToast('👋 Você saiu do sistema', '#1a4a58');
         }
+        mostrarLogin();
     }
 
     // ============================================================
