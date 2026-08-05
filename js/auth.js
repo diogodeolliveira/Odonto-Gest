@@ -67,11 +67,11 @@
     function mostrarSistema() {
         if (loginContainer) loginContainer.style.display = 'none';
         if (sistemaPrincipal) sistemaPrincipal.style.display = 'block';
-        
+
         if (APP.usuarioAtual && usuarioLogado) {
             usuarioLogado.innerHTML = `<i class="fas fa-user"></i> ${APP.escapeHTML ? APP.escapeHTML(APP.usuarioAtual.nome_completo) : APP.usuarioAtual.nome_completo}`;
         }
-        
+
         if (typeof APP.popularStatusSelects === 'function') {
             APP.popularStatusSelects();
         }
@@ -126,7 +126,7 @@
             console.log('✅ Login bem-sucedido!', usuario);
             APP.usuarioAtual = usuario;
             salvarSessao(usuario);
-            
+
             loginSuccess.textContent = '✅ Login realizado com sucesso!';
             loginSuccess.style.display = 'block';
 
