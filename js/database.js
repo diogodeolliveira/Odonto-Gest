@@ -51,9 +51,9 @@
         try {
             console.log('🔄 Carregando pacientes...');
 
-            // Verifica autenticação
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            // Verifica autenticação via sessão local
+            const sessao = localStorage.getItem('odontogest_sessao');
+            if (!sessao) {
                 console.warn('⚠️ Usuário não autenticado.');
                 const local = localStorage.getItem(CONFIG.STORAGE_KEY);
                 APP.pacientes = local ? JSON.parse(local) : [];
@@ -106,7 +106,7 @@
     };
 
     // ============================================================
-    // ENVIAR PARA SUPABASE (UPSERT)
+    // ENVIAR PARA SUPABASE (UPSERT - SEGURO)
     // ============================================================
     APP.enviarParaSupabase = async function(dados) {
         try {
@@ -115,8 +115,8 @@
                 return true;
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const sessao = localStorage.getItem('odontogest_sessao');
+            if (!sessao) {
                 APP.mostrarToast('⚠️ Faça login para sincronizar', '#8a6a3a');
                 return false;
             }
@@ -132,6 +132,10 @@
 
             if (error) throw error;
 
+            // Atualiza a lista local
+            APP.pacientes = dados;
+            APP.salvarDadosLocal();
+
             APP.mostrarToast(`📤 ${dados.length} pacientes sincronizados!`, '#1a6a4a');
             return true;
         } catch (error) {
@@ -142,32 +146,25 @@
     };
 
     // ============================================================
-    // SINCRONIZAR (MERGE POR TIMESTAMP)
+    // SINCRONIZAR (MERGE POR TIMESTAMP - SEGURO)
     // ============================================================
     APP.sincronizar = async function() {
-        const btnSincronizar = document.getElementById('btnSincronizar');
-        if (btnSincronizar) {
-            btnSincronizar.classList.add('sincronizando');
-            btnSincronizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+        const btnSync = document.getElementById('btnSincronizarFlutuante');
+        if (btnSync) {
+            btnSync.classList.add('sincronizando');
         }
 
         try {
             const conectado = await APP.testarConexao();
             if (!conectado) {
-                if (btnSincronizar) {
-                    btnSincronizar.classList.remove('sincronizando');
-                    btnSincronizar.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
-                }
+                if (btnSync) btnSync.classList.remove('sincronizando');
                 return;
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const sessao = localStorage.getItem('odontogest_sessao');
+            if (!sessao) {
                 APP.mostrarToast('⚠️ Faça login para sincronizar', '#8a6a3a');
-                if (btnSincronizar) {
-                    btnSincronizar.classList.remove('sincronizando');
-                    btnSincronizar.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
-                }
+                if (btnSync) btnSync.classList.remove('sincronizando');
                 return;
             }
 
@@ -211,9 +208,8 @@
             APP.mostrarToast('❌ Erro ao sincronizar: ' + error.message, '#7a3a3a');
         }
 
-        if (btnSincronizar) {
-            btnSincronizar.classList.remove('sincronizando');
-            btnSincronizar.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
+        if (btnSync) {
+            btnSync.classList.remove('sincronizando');
         }
     };
 
