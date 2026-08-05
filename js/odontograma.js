@@ -5,9 +5,6 @@
 
     const APP = window.APP;
 
-    // ============================================================
-    // CONSTANTES COMPARTILHADAS
-    // ============================================================
     const DENTES = {
         SUPERIOR_ESQUERDA: [18, 17, 16, 15, 14, 13, 12, 11],
         SUPERIOR_DIREITA: [21, 22, 23, 24, 25, 26, 27, 28],
@@ -15,9 +12,6 @@
         INFERIOR_DIREITA: [41, 42, 43, 44, 45, 46, 47, 48]
     };
 
-    // ============================================================
-    // RENDER ODONTOGRAMA CADASTRO
-    // ============================================================
     APP.renderOdontogramaCadastro = function() {
         const arcadaSuperior = document.getElementById('arcadaSuperiorCadastro');
         const arcadaInferior = document.getElementById('arcadaInferiorCadastro');
@@ -60,9 +54,6 @@
         DENTES.INFERIOR_DIREITA.forEach(num => arcadaInferior.appendChild(criarDente(num)));
     };
 
-    // ============================================================
-    // RENDER ODONTOGRAMA DETALHES
-    // ============================================================
     APP.renderOdontogramaDetalhes = function(dentesArray) {
         const arcadaSuperior = document.getElementById('detalhesArcadaSuperior');
         const arcadaInferior = document.getElementById('detalhesArcadaInferior');
