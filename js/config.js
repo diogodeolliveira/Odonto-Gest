@@ -9,16 +9,6 @@
     // ============================================================
     // CONFIGURAÇÕES — SUBSTITUA PELAS SUAS
     // ============================================================
-    // ⚠️ IMPORTANTE: os valores abaixo são placeholders. Se o arquivo
-    // publicado ainda tiver 'SEU_PROJETO' ou 'SUA_CHAVE_ANON_AQUI',
-    // NENHUMA chamada ao Supabase vai funcionar (login, registro,
-    // carregar pacientes) — e o navegador costuma mostrar isso como
-    // um erro de CORS, mesmo o problema real sendo a URL/chave errada.
-    //
-    // Onde pegar os valores reais:
-    // Painel do Supabase → seu projeto → Project Settings → API
-    //   - Project URL          → SUPABASE_URL
-    //   - anon / public key    → SUPABASE_ANON_KEY
     window.APP.CONFIG = {
         SUPABASE_URL: 'https://cccukpzwbdaycdwmvdyp.supabase.co',
         SUPABASE_ANON_KEY: 'sb_publishable_ygGdsS-kgYQN3KOXfB7pSQ_QknXJgah',
@@ -39,10 +29,6 @@
     // ============================================================
     // MAPEAMENTO DE STATUS
     // ============================================================
-    // Fonte única de verdade para os status. Os <select> do HTML
-    // (modalStatus / filtroStatus) são preenchidos a partir daqui
-    // por APP.popularStatusSelects() em ui.js — não edite as
-    // <option> no HTML na mão, edite só aqui.
     window.APP.STATUS_MAP = {
         'encaminhado': { label: 'Encaminhado', class: 'status-encaminhado', dot: 'dot-encaminhado', pdfClass: 'status-encaminhado-pdf' },
         'espera': { label: 'Em espera', class: 'status-espera', dot: 'dot-espera', pdfClass: 'status-espera-pdf' },
