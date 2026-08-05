@@ -25,21 +25,10 @@
             console.log('🔍 Testando conexão...');
             const { error } = await supabase.from('pacientes').select('count', { count: 'exact', head: true });
             if (error) throw error;
-
-            const statusConexao = document.getElementById('statusConexao');
-            if (statusConexao) {
-                statusConexao.className = 'status-online';
-                statusConexao.innerHTML = '<i class="fas fa-cloud"></i> Conectado';
-            }
             console.log('✅ Conexão OK!');
             return true;
         } catch (error) {
             console.error('❌ Erro de conexão:', error);
-            const statusConexao = document.getElementById('statusConexao');
-            if (statusConexao) {
-                statusConexao.className = 'status-offline';
-                statusConexao.innerHTML = '<i class="fas fa-cloud"></i> Offline';
-            }
             return false;
         }
     };
@@ -51,7 +40,6 @@
         try {
             console.log('🔄 Carregando pacientes...');
 
-            // Verifica autenticação via sessão local
             const sessao = localStorage.getItem('odontogest_sessao');
             if (!sessao) {
                 console.warn('⚠️ Usuário não autenticado.');
@@ -145,7 +133,7 @@
     };
 
     // ============================================================
-    // SINCRONIZAR (MERGE POR TIMESTAMP - SEGURO)
+    // SINCRONIZAR (CORRIGIDO - COM FILTRO DE DADOS INVÁLIDOS)
     // ============================================================
     APP.sincronizar = async function() {
         const btnSync = document.getElementById('btnSincronizarFlutuante');
@@ -174,29 +162,43 @@
 
             if (error) throw error;
 
-            const local = APP.pacientes || [];
-            const dadosNuvemMap = new Map(dadosNuvem.map(p => [p.id, p]));
+            // ✅ FILTRA PACIENTES INVÁLIDOS
+            const local = (APP.pacientes || []).filter(p => p && p.id !== undefined && p.id !== null);
+            const nuvem = (dadosNuvem || []).filter(p => p && p.id !== undefined && p.id !== null);
 
+            const dadosNuvemMap = new Map(nuvem.map(p => [p.id, p]));
+
+            // Merge inteligente
             const merged = local.map(p => {
-                const nuvem = dadosNuvemMap.get(p.id);
-                if (nuvem && new Date(nuvem.updated_at) > new Date(p.updated_at || 0)) {
-                    return nuvem;
+                const nuvemItem = dadosNuvemMap.get(p.id);
+                if (nuvemItem && new Date(nuvemItem.updated_at) > new Date(p.updated_at || 0)) {
+                    return nuvemItem;
                 }
                 return p;
             });
 
-            dadosNuvem.forEach(p => {
+            // Adiciona itens que só existem na nuvem
+            nuvem.forEach(p => {
                 if (!merged.some(m => m.id === p.id)) {
                     merged.push(p);
                 }
             });
 
-            if (JSON.stringify(merged.sort((a, b) => a.id - b.id)) !== JSON.stringify(local.sort((a, b) => a.id - b.id))) {
-                APP.pacientes = merged;
+            // ✅ ORDENAÇÃO COM VERIFICAÇÃO DE SEGURANÇA
+            const mergedOrdenado = merged
+                .filter(p => p && p.id !== undefined && p.id !== null)
+                .sort((a, b) => (a.id || 0) - (b.id || 0));
+
+            const localOrdenado = local
+                .filter(p => p && p.id !== undefined && p.id !== null)
+                .sort((a, b) => (a.id || 0) - (b.id || 0));
+
+            if (JSON.stringify(mergedOrdenado) !== JSON.stringify(localOrdenado)) {
+                APP.pacientes = mergedOrdenado;
                 APP.salvarDadosLocal();
                 APP.renderizarTabela();
                 APP.popularSelects();
-                APP.mostrarToast(`✅ ${merged.length} pacientes sincronizados!`, '#1a6a4a');
+                APP.mostrarToast(`✅ ${mergedOrdenado.length} pacientes sincronizados!`, '#1a6a4a');
             } else {
                 APP.mostrarToast('✅ Dados já estão sincronizados!', '#1a6a4a');
             }
