@@ -7,9 +7,6 @@
     let termoBusca = '';
     let timeoutBusca = null;
 
-    // ============================================================
-    // CONFIGURAR BUSCA (COM DEBOUNCE)
-    // ============================================================
     APP.configurarBusca = function() {
         const buscaInput = document.getElementById('buscaPacientes');
         const buscaLimpar = document.getElementById('buscaLimpar');
@@ -47,9 +44,6 @@
         });
     };
 
-    // ============================================================
-    // POPULA OS <select> DE STATUS
-    // ============================================================
     APP.popularStatusSelects = function() {
         const STATUS_MAP = APP.STATUS_MAP || {};
         const STATUS_KEYS = APP.STATUS_KEYS || [];
@@ -77,9 +71,6 @@
         }
     };
 
-    // ============================================================
-    // OBTEM PACIENTES FILTRADOS
-    // ============================================================
     APP.getPacientesFiltrados = function() {
         const pacientes = APP.pacientes || [];
         const filtroLocal = document.getElementById('filtroLocal');
@@ -112,9 +103,6 @@
         return filtrados;
     };
 
-    // ============================================================
-    // RENDERIZAR TABELA (COM ESCAPE HTML)
-    // ============================================================
     APP.renderizarTabela = function() {
         const corpoTabela = document.getElementById('corpoTabela');
         const contadorRegistros = document.getElementById('contadorRegistros');
@@ -217,16 +205,10 @@
         });
     };
 
-    // ============================================================
-    // FECHAR DROPDOWNS AO CLICAR FORA
-    // ============================================================
     document.addEventListener('click', function() {
         document.querySelectorAll('.status-dropdown-content').forEach(d => d.classList.remove('active'));
     });
 
-    // ============================================================
-    // FUNÇÕES AUXILIARES
-    // ============================================================
     APP.getStatusBadge = function(status, clickable = true) {
         const STATUS_MAP = APP.STATUS_MAP || {};
         const s = STATUS_MAP[status];
