@@ -33,6 +33,11 @@
                 APP.renderOdontogramaCadastro();
                 APP.configurarEventos();
 
+                // ✅ NOVAS CONFIGURAÇÕES DE FRONT-END
+                if (typeof initNovasConfiguracoes === 'function') {
+                    initNovasConfiguracoes();
+                }
+
                 setInterval(() => {
                     if (navigator.onLine && APP.usuarioAtual) {
                         APP.sincronizar();
@@ -68,42 +73,6 @@
             btnSalvar.addEventListener('click', function() {
                 console.log('🟢 Botão SALVAR clicado!');
                 APP.salvarPaciente();
-            });
-        }
-
-        // Botão SINCRONIZAR
-        const btnSincronizar = document.getElementById('btnSincronizar');
-        if (btnSincronizar) {
-            btnSincronizar.addEventListener('click', function() {
-                console.log('🟢 Botão SINCRONIZAR clicado!');
-                APP.sincronizar();
-            });
-        }
-
-        // Botão PDF
-        const btnPDF = document.getElementById('btnGerarPDF');
-        if (btnPDF) {
-            btnPDF.addEventListener('click', function() {
-                console.log('🟢 Botão PDF clicado!');
-                APP.gerarPDF();
-            });
-        }
-
-        // Botão EXPORTAR
-        const btnExportar = document.getElementById('btnExportarJSON');
-        if (btnExportar) {
-            btnExportar.addEventListener('click', function() {
-                console.log('🟢 Botão EXPORTAR clicado!');
-                APP.exportarJSON();
-            });
-        }
-
-        // Botão IMPORTAR
-        const btnImportar = document.getElementById('btnImportarJSON');
-        if (btnImportar) {
-            btnImportar.addEventListener('click', function() {
-                console.log('🟢 Botão IMPORTAR clicado!');
-                APP.importarJSON();
             });
         }
 
@@ -401,7 +370,17 @@
 
     APP.removerPaciente = async function(id) {
         console.log('🟢 Removendo paciente:', id);
-        if (!confirm('Remover este paciente?')) return;
+
+        // ✅ CONFIRMAÇÃO DUPLA
+        if (!confirm('⚠️ Tem certeza que deseja remover este paciente? Esta ação é irreversível.')) {
+            APP.mostrarToast('❌ Remoção cancelada', '#7a3a3a');
+            return;
+        }
+
+        if (!confirm('✅ Confirme novamente: deseja remover permanentemente este paciente?')) {
+            APP.mostrarToast('❌ Remoção cancelada', '#7a3a3a');
+            return;
+        }
 
         try {
             const { error } = await APP.supabase
@@ -528,18 +507,32 @@
 
     APP.importarJSON = function() {
         console.log('🟢 Importando dados...');
+
+        // ✅ ALERTA DE SEGURANÇA
+        if (!confirm('⚠️ ATENÇÃO: Isso substituirá TODOS os pacientes atuais por um arquivo JSON. Deseja continuar?')) {
+            APP.mostrarToast('❌ Importação cancelada', '#7a3a3a');
+            return;
+        }
+
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
         input.onchange = async function(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            // ✅ CONFIRMAÇÃO ADICIONAL
+            if (!confirm(`⚠️ Tem certeza que deseja importar ${file.name}? Isso substituirá todos os dados atuais.`)) {
+                APP.mostrarToast('❌ Importação cancelada', '#7a3a3a');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = async function(ev) {
                 try {
                     const dados = JSON.parse(ev.target.result);
                     if (Array.isArray(dados) && dados.length > 0) {
-                        if (confirm(`Deseja importar ${dados.length} pacientes? Isso substituirá todos os dados atuais.`)) {
+                        if (confirm(`📤 Deseja importar ${dados.length} pacientes?`)) {
                             await APP.enviarParaSupabase(dados);
                             APP.pacientes = dados;
                             APP.salvarDadosLocal();
@@ -558,6 +551,103 @@
         };
         input.click();
     };
+
+    // ============================================================
+    // MENU MAIS (DROPDOWN)
+    // ============================================================
+    function configurarMenuMais() {
+        const btnMais = document.getElementById('btnMais');
+        const dropdown = document.getElementById('dropdownMais');
+
+        if (btnMais && dropdown) {
+            btnMais.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', function() {
+                dropdown.classList.remove('active');
+            });
+
+            dropdown.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    dropdown.classList.remove('active');
+                });
+            });
+        }
+    }
+
+    // ============================================================
+    // BOTÃO SINCRONIZAR FLUTUANTE
+    // ============================================================
+    function configurarSincronizacaoFlutuante() {
+        const syncBtn = document.createElement('button');
+        syncBtn.id = 'btnSincronizarFlutuante';
+        syncBtn.className = 'btn-sync-float';
+        syncBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+        syncBtn.title = 'Sincronizar com a nuvem';
+        syncBtn.setAttribute('aria-label', 'Sincronizar com a nuvem');
+        document.body.appendChild(syncBtn);
+
+        syncBtn.addEventListener('click', function() {
+            if (typeof APP.sincronizar === 'function') {
+                APP.sincronizar();
+            }
+        });
+    }
+
+    // ============================================================
+    // REMOVER BOTÕES ANTIGOS DO HEADER
+    // ============================================================
+    function removerBotoesAntigos() {
+        const botoesParaRemover = [
+            'btnGerarPDF',
+            'btnExportarJSON',
+            'btnImportarJSON',
+            'btnLogout'
+        ];
+
+        botoesParaRemover.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'none';
+            }
+        });
+
+        const statusConexao = document.getElementById('statusConexao');
+        if (statusConexao) {
+            statusConexao.style.display = 'none';
+        }
+    }
+
+    // ============================================================
+    // INICIALIZAR NOVAS CONFIGURAÇÕES
+    // ============================================================
+    function initNovasConfiguracoes() {
+        configurarMenuMais();
+        configurarSincronizacaoFlutuante();
+        removerBotoesAntigos();
+
+        const btnPDF = document.getElementById('btnGerarPDF');
+        if (btnPDF && typeof APP.gerarPDF === 'function') {
+            btnPDF.addEventListener('click', APP.gerarPDF);
+        }
+
+        const btnExportar = document.getElementById('btnExportarJSON');
+        if (btnExportar && typeof APP.exportarJSON === 'function') {
+            btnExportar.addEventListener('click', APP.exportarJSON);
+        }
+
+        const btnImportar = document.getElementById('btnImportarJSON');
+        if (btnImportar && typeof APP.importarJSON === 'function') {
+            btnImportar.addEventListener('click', APP.importarJSON);
+        }
+
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout && typeof APP.fazerLogout === 'function') {
+            btnLogout.addEventListener('click', APP.fazerLogout);
+        }
+    }
 
     // ============================================================
     // INICIALIZAÇÃO
