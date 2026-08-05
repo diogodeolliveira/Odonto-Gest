@@ -132,7 +132,6 @@
 
             if (error) throw error;
 
-            // Atualiza a lista local
             APP.pacientes = dados;
             APP.salvarDadosLocal();
 
@@ -178,7 +177,6 @@
             const local = APP.pacientes || [];
             const dadosNuvemMap = new Map(dadosNuvem.map(p => [p.id, p]));
 
-            // Merge inteligente
             const merged = local.map(p => {
                 const nuvem = dadosNuvemMap.get(p.id);
                 if (nuvem && new Date(nuvem.updated_at) > new Date(p.updated_at || 0)) {
