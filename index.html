@@ -22,7 +22,7 @@
 <body>
 
     <!-- ============================================================ -->
-    <!-- TELA DE LOGIN (SEM REGISTRO) -->
+    <!-- TELA DE LOGIN -->
     <!-- ============================================================ -->
     <div id="loginContainer">
         <div class="login-container">
@@ -53,7 +53,7 @@
                 </div>
 
                 <!-- REMOVIDO: REGISTRO FORM -->
-                <!-- REMOVIDO: RECUPERAÇÃO DE SENHA (opcional, pode manter se quiser) -->
+                <!-- REMOVIDO: RECUPERAÇÃO DE SENHA -->
             </div>
         </div>
     </div>
@@ -70,23 +70,40 @@
                     <span class="subtitle">Cadastro · odontograma · dados na nuvem</span>
                 </div>
                 <div class="header-actions">
+                    <!-- BARRA DE BUSCA -->
                     <div class="search-box">
                         <i class="fas fa-search search-icon"></i>
                         <input type="text" id="buscaPacientes" placeholder="Buscar paciente..." class="search-input">
                         <span id="buscaLimpar" class="search-clear" style="display:none;">✕</span>
                     </div>
-                    <span id="statusConexao" class="status-online"><i class="fas fa-cloud"></i> Conectado</span>
+
+                    <!-- STATUS DO USUÁRIO -->
                     <span id="usuarioLogado" class="status-user"><i class="fas fa-user"></i> Carregando...</span>
-                    <button class="btn btn-danger" id="btnLogout"><i class="fas fa-sign-out-alt"></i> Sair</button>
-                    <button class="btn btn-sync" id="btnSincronizar"><i class="fas fa-sync"></i> Sincronizar</button>
-                    <button class="btn btn-pdf" id="btnGerarPDF"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button class="btn btn-export" id="btnExportarJSON"><i class="fas fa-download"></i> Exportar</button>
-                    <button class="btn btn-import" id="btnImportarJSON"><i class="fas fa-upload"></i> Importar</button>
-                    <button class="btn btn-success" id="btnAbrirModalCadastro"><i class="fas fa-user-plus"></i> Novo</button>
+
+                    <!-- BOTÃO MAIS (3 PONTINHOS) -->
+                    <div class="dropdown-more">
+                        <button class="btn btn-more" id="btnMais" title="Mais opções">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="dropdown-more-content" id="dropdownMais">
+                            <button class="dropdown-item" id="btnGerarPDF">
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
+                            </button>
+                            <button class="dropdown-item" id="btnExportarJSON">
+                                <i class="fas fa-download"></i> Exportar dados
+                            </button>
+                            <button class="dropdown-item" id="btnImportarJSON">
+                                <i class="fas fa-upload"></i> Importar dados
+                            </button>
+                            <hr />
+                            <button class="dropdown-item dropdown-danger" id="btnLogout">
+                                <i class="fas fa-sign-out-alt"></i> Sair
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            <!-- Filtros -->
             <div class="filters">
                 <div class="filter-group">
                     <label for="filtroLocal"><i class="fas fa-map-pin"></i> Local</label>
@@ -112,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- Tabela -->
             <div class="table-wrapper">
                 <table>
                     <thead>
