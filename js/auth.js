@@ -1,14 +1,11 @@
 // ============================================================
-// AUTENTICAÇÃO - LOGIN MANUAL (SEM SUPABASE AUTH)
+// AUTENTICAÇÃO - LOGIN MANUAL
 // ============================================================
 (function() {
 
     const APP = window.APP;
     const supabase = APP.supabase;
 
-    // ============================================================
-    // DOM ELEMENTOS
-    // ============================================================
     const loginContainer = document.getElementById('loginContainer');
     const sistemaPrincipal = document.getElementById('sistemaPrincipal');
     const loginForm = document.getElementById('loginForm');
@@ -22,9 +19,6 @@
     const btnLogout = document.getElementById('btnLogout');
     const usuarioLogado = document.getElementById('usuarioLogado');
 
-    // ============================================================
-    // SESSÃO (salva no localStorage)
-    // ============================================================
     function salvarSessao(usuario) {
         localStorage.setItem('odontogest_sessao', JSON.stringify(usuario));
     }
@@ -42,9 +36,6 @@
         localStorage.removeItem('odontogest_sessao');
     }
 
-    // ============================================================
-    // VERIFICAÇÃO DE SESSÃO
-    // ============================================================
     APP.verificarSessao = async function() {
         const sessao = carregarSessao();
         if (sessao) {
@@ -80,9 +71,6 @@
         }
     }
 
-    // ============================================================
-    // FUNÇÃO DE LOGIN (BUSCA NA TABELA usuarios)
-    // ============================================================
     async function fazerLogin() {
         console.log('🟢 Tentando login...');
         const username = loginUsername.value.trim();
@@ -100,7 +88,6 @@
         btnLogin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
 
         try {
-            // 🔍 Busca o usuário no banco de dados
             const { data: usuario, error } = await supabase
                 .from('usuarios')
                 .select('*')
@@ -115,14 +102,12 @@
                 return;
             }
 
-            // 🔐 Verifica a senha
             if (usuario.senha !== password) {
                 loginError.textContent = '❌ Usuário ou senha incorretos';
                 loginError.style.display = 'block';
                 return;
             }
 
-            // ✅ Login bem-sucedido
             console.log('✅ Login bem-sucedido!', usuario);
             APP.usuarioAtual = usuario;
             salvarSessao(usuario);
@@ -144,9 +129,6 @@
         }
     }
 
-    // ============================================================
-    // FUNÇÃO DE LOGOUT
-    // ============================================================
     async function fazerLogout() {
         limparSessao();
         APP.usuarioAtual = null;
@@ -157,9 +139,6 @@
         mostrarLogin();
     }
 
-    // ============================================================
-    // EVENTOS
-    // ============================================================
     if (btnLogin) btnLogin.addEventListener('click', fazerLogin);
     if (loginPassword) {
         loginPassword.addEventListener('keydown', function(e) {
@@ -174,9 +153,6 @@
 
     if (btnLogout) btnLogout.addEventListener('click', fazerLogout);
 
-    // ============================================================
-    // EXPORTA FUNÇÕES
-    // ============================================================
     APP.fazerLogin = fazerLogin;
     APP.fazerLogout = fazerLogout;
 
