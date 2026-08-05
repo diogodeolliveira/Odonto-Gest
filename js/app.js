@@ -371,7 +371,6 @@
     APP.removerPaciente = async function(id) {
         console.log('🟢 Removendo paciente:', id);
 
-        // ✅ CONFIRMAÇÃO DUPLA
         if (!confirm('⚠️ Tem certeza que deseja remover este paciente? Esta ação é irreversível.')) {
             APP.mostrarToast('❌ Remoção cancelada', '#7a3a3a');
             return;
@@ -508,7 +507,6 @@
     APP.importarJSON = function() {
         console.log('🟢 Importando dados...');
 
-        // ✅ ALERTA DE SEGURANÇA
         if (!confirm('⚠️ ATENÇÃO: Isso substituirá TODOS os pacientes atuais por um arquivo JSON. Deseja continuar?')) {
             APP.mostrarToast('❌ Importação cancelada', '#7a3a3a');
             return;
@@ -521,7 +519,6 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            // ✅ CONFIRMAÇÃO ADICIONAL
             if (!confirm(`⚠️ Tem certeza que deseja importar ${file.name}? Isso substituirá todos os dados atuais.`)) {
                 APP.mostrarToast('❌ Importação cancelada', '#7a3a3a');
                 return;
@@ -556,31 +553,42 @@
     // MENU MAIS (DROPDOWN)
     // ============================================================
     function configurarMenuMais() {
+        console.log('🔧 Configurando menu "Mais"...');
         const btnMais = document.getElementById('btnMais');
         const dropdown = document.getElementById('dropdownMais');
 
-        if (btnMais && dropdown) {
-            btnMais.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdown.classList.toggle('active');
-            });
+        if (!btnMais || !dropdown) {
+            console.warn('⚠️ Menu "Mais" não encontrado no HTML');
+            return;
+        }
 
-            document.addEventListener('click', function() {
+        btnMais.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function() {
+            dropdown.classList.remove('active');
+        });
+
+        dropdown.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
                 dropdown.classList.remove('active');
             });
+        });
 
-            dropdown.querySelectorAll('.dropdown-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    dropdown.classList.remove('active');
-                });
-            });
-        }
+        console.log('✅ Menu "Mais" configurado');
     }
 
     // ============================================================
     // BOTÃO SINCRONIZAR FLUTUANTE
     // ============================================================
     function configurarSincronizacaoFlutuante() {
+        console.log('🔧 Configurando sincronização flutuante...');
+        if (document.getElementById('btnSincronizarFlutuante')) {
+            return;
+        }
+
         const syncBtn = document.createElement('button');
         syncBtn.id = 'btnSincronizarFlutuante';
         syncBtn.className = 'btn-sync-float';
@@ -594,12 +602,15 @@
                 APP.sincronizar();
             }
         });
+
+        console.log('✅ Sincronização flutuante configurada');
     }
 
     // ============================================================
     // REMOVER BOTÕES ANTIGOS DO HEADER
     // ============================================================
     function removerBotoesAntigos() {
+        console.log('🔧 Removendo botões antigos do header...');
         const botoesParaRemover = [
             'btnGerarPDF',
             'btnExportarJSON',
@@ -611,6 +622,7 @@
             const el = document.getElementById(id);
             if (el) {
                 el.style.display = 'none';
+                console.log(`   - ${id} ocultado`);
             }
         });
 
@@ -618,35 +630,44 @@
         if (statusConexao) {
             statusConexao.style.display = 'none';
         }
+        console.log('✅ Botões antigos ocultados');
     }
 
     // ============================================================
     // INICIALIZAR NOVAS CONFIGURAÇÕES
     // ============================================================
     function initNovasConfiguracoes() {
+        console.log('🔧 Inicializando novas configurações...');
         configurarMenuMais();
         configurarSincronizacaoFlutuante();
         removerBotoesAntigos();
 
+        // Reconecta os eventos dos botões do menu
         const btnPDF = document.getElementById('btnGerarPDF');
         if (btnPDF && typeof APP.gerarPDF === 'function') {
             btnPDF.addEventListener('click', APP.gerarPDF);
+            console.log('   - Evento PDF reconectado');
         }
 
         const btnExportar = document.getElementById('btnExportarJSON');
         if (btnExportar && typeof APP.exportarJSON === 'function') {
             btnExportar.addEventListener('click', APP.exportarJSON);
+            console.log('   - Evento Exportar reconectado');
         }
 
         const btnImportar = document.getElementById('btnImportarJSON');
         if (btnImportar && typeof APP.importarJSON === 'function') {
             btnImportar.addEventListener('click', APP.importarJSON);
+            console.log('   - Evento Importar reconectado');
         }
 
         const btnLogout = document.getElementById('btnLogout');
         if (btnLogout && typeof APP.fazerLogout === 'function') {
             btnLogout.addEventListener('click', APP.fazerLogout);
+            console.log('   - Evento Logout reconectado');
         }
+
+        console.log('✅ Novas configurações finalizadas!');
     }
 
     // ============================================================
