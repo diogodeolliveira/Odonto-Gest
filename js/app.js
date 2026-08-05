@@ -5,17 +5,11 @@
 
     const APP = window.APP;
 
-    // ============================================================
-    // VARIÁVEIS GLOBAIS
-    // ============================================================
     APP.pacientes = APP.pacientes || [];
     APP.encaminhamentosTemp = APP.encaminhamentosTemp || [];
     APP.dentesSelecionados = APP.dentesSelecionados || new Set();
     APP.usuarioAtual = APP.usuarioAtual || null;
 
-    // ============================================================
-    // INICIALIZAÇÃO
-    // ============================================================
     APP.init = async function() {
         if (APP._iniciado) {
             console.warn('⚠️ APP.init() chamado mais de uma vez — ignorando.');
@@ -32,11 +26,7 @@
                 APP.configurarBusca();
                 APP.renderOdontogramaCadastro();
                 APP.configurarEventos();
-
-                // ✅ NOVAS CONFIGURAÇÕES DE FRONT-END
-                if (typeof initNovasConfiguracoes === 'function') {
-                    initNovasConfiguracoes();
-                }
+                initNovasConfiguracoes();
 
                 setInterval(() => {
                     if (navigator.onLine && APP.usuarioAtual) {
@@ -52,13 +42,9 @@
         }
     };
 
-    // ============================================================
-    // CONFIGURAÇÃO DE EVENTOS
-    // ============================================================
     APP.configurarEventos = function() {
         console.log('🔧 Configurando eventos...');
 
-        // Botão NOVO
         const btnNovo = document.getElementById('btnAbrirModalCadastro');
         if (btnNovo) {
             btnNovo.addEventListener('click', function() {
@@ -67,7 +53,6 @@
             });
         }
 
-        // Botão SALVAR
         const btnSalvar = document.getElementById('btnSalvarPaciente');
         if (btnSalvar) {
             btnSalvar.addEventListener('click', function() {
@@ -76,7 +61,6 @@
             });
         }
 
-        // Botão ADICIONAR ENCAMINHAMENTO
         const btnAddEnc = document.getElementById('btnAddEncaminhamento');
         if (btnAddEnc) {
             btnAddEnc.addEventListener('click', function() {
@@ -85,7 +69,6 @@
             });
         }
 
-        // Filtros
         const btnFiltrar = document.getElementById('btnFiltrar');
         if (btnFiltrar) {
             btnFiltrar.addEventListener('click', function() {
@@ -141,10 +124,6 @@
 
         console.log('✅ Eventos configurados!');
     };
-
-    // ============================================================
-    // FUNÇÕES DE CADASTRO
-    // ============================================================
 
     APP.abrirCadastro = function() {
         console.log('🟢 Abrindo cadastro...');
@@ -248,10 +227,6 @@
         }
     };
 
-    // ============================================================
-    // FUNÇÕES DE ENCAMINHAMENTOS E EXAMES
-    // ============================================================
-
     APP.atualizarListaEncaminhamentos = function() {
         const modalEncList = document.getElementById('modalEncList');
         if (!modalEncList) return;
@@ -305,10 +280,6 @@
         });
         return selecionados;
     };
-
-    // ============================================================
-    // FUNÇÕES DE DETALHES, EDIÇÃO E EXCLUSÃO
-    // ============================================================
 
     APP.abrirDetalhes = function(id) {
         const paciente = APP.pacientes.find(p => p.id === id);
@@ -425,10 +396,6 @@
             APP.mostrarToast('❌ Erro ao alterar status', '#7a3a3a');
         }
     };
-
-    // ============================================================
-    // FUNÇÕES DE PDF E EXPORT
-    // ============================================================
 
     APP.gerarPDF = function() {
         console.log('🟢 Gerando PDF...');
@@ -550,15 +517,16 @@
     };
 
     // ============================================================
-    // MENU MAIS (DROPDOWN)
+    // MENU MAIS E SINCRONIZAÇÃO FLUTUANTE
     // ============================================================
+
     function configurarMenuMais() {
         console.log('🔧 Configurando menu "Mais"...');
         const btnMais = document.getElementById('btnMais');
         const dropdown = document.getElementById('dropdownMais');
 
         if (!btnMais || !dropdown) {
-            console.warn('⚠️ Menu "Mais" não encontrado no HTML');
+            console.warn('⚠️ Menu "Mais" não encontrado');
             return;
         }
 
@@ -580,9 +548,6 @@
         console.log('✅ Menu "Mais" configurado');
     }
 
-    // ============================================================
-    // BOTÃO SINCRONIZAR FLUTUANTE
-    // ============================================================
     function configurarSincronizacaoFlutuante() {
         console.log('🔧 Configurando sincronização flutuante...');
         if (document.getElementById('btnSincronizarFlutuante')) {
@@ -606,17 +571,9 @@
         console.log('✅ Sincronização flutuante configurada');
     }
 
-    // ============================================================
-    // REMOVER BOTÕES ANTIGOS DO HEADER
-    // ============================================================
     function removerBotoesAntigos() {
         console.log('🔧 Removendo botões antigos do header...');
-        const botoesParaRemover = [
-            'btnGerarPDF',
-            'btnExportarJSON',
-            'btnImportarJSON',
-            'btnLogout'
-        ];
+        const botoesParaRemover = ['btnGerarPDF', 'btnExportarJSON', 'btnImportarJSON', 'btnLogout'];
 
         botoesParaRemover.forEach(id => {
             const el = document.getElementById(id);
@@ -633,38 +590,30 @@
         console.log('✅ Botões antigos ocultados');
     }
 
-    // ============================================================
-    // INICIALIZAR NOVAS CONFIGURAÇÕES
-    // ============================================================
     function initNovasConfiguracoes() {
         console.log('🔧 Inicializando novas configurações...');
         configurarMenuMais();
         configurarSincronizacaoFlutuante();
         removerBotoesAntigos();
 
-        // Reconecta os eventos dos botões do menu
         const btnPDF = document.getElementById('btnGerarPDF');
         if (btnPDF && typeof APP.gerarPDF === 'function') {
             btnPDF.addEventListener('click', APP.gerarPDF);
-            console.log('   - Evento PDF reconectado');
         }
 
         const btnExportar = document.getElementById('btnExportarJSON');
         if (btnExportar && typeof APP.exportarJSON === 'function') {
             btnExportar.addEventListener('click', APP.exportarJSON);
-            console.log('   - Evento Exportar reconectado');
         }
 
         const btnImportar = document.getElementById('btnImportarJSON');
         if (btnImportar && typeof APP.importarJSON === 'function') {
             btnImportar.addEventListener('click', APP.importarJSON);
-            console.log('   - Evento Importar reconectado');
         }
 
         const btnLogout = document.getElementById('btnLogout');
         if (btnLogout && typeof APP.fazerLogout === 'function') {
             btnLogout.addEventListener('click', APP.fazerLogout);
-            console.log('   - Evento Logout reconectado');
         }
 
         console.log('✅ Novas configurações finalizadas!');
