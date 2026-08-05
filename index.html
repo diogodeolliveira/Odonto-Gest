@@ -22,7 +22,7 @@
 <body>
 
     <!-- ============================================================ -->
-    <!-- TELA DE LOGIN -->
+    <!-- TELA DE LOGIN (SEM REGISTRO) -->
     <!-- ============================================================ -->
     <div id="loginContainer">
         <div class="login-container">
@@ -35,7 +35,7 @@
 
                 <!-- LOGIN -->
                 <div id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="Seu email" />
+                    <input type="text" id="loginUsername" placeholder="Seu apelido (ex: admin)" />
                     <input type="password" id="loginPassword" placeholder="Sua senha" />
 
                     <button class="btn btn-primary" id="btnLogin">
@@ -47,67 +47,13 @@
 
                     <hr />
 
-                    <button class="btn btn-secondary" id="btnMostrarRegistro">
-                        <i class="fas fa-user-plus"></i> Criar minha conta
-                    </button>
-
-                    <button class="btn btn-outline" id="btnEsqueciSenha" style="margin-top: 0.8rem;">
-                        <i class="fas fa-key"></i> Esqueci minha senha
-                    </button>
+                    <div style="text-align: center; color: #5a7f8a; font-size: 0.85rem; margin-top: 0.5rem;">
+                        <i class="fas fa-lock"></i> Sistema restrito - acesso autorizado apenas
+                    </div>
                 </div>
 
-                <!-- REGISTRO -->
-                <div id="registroForm" style="display: none;">
-                    <h3><i class="fas fa-user-plus"></i> Criar Conta</h3>
-                    <p>Preencha os dados abaixo para começar</p>
-
-                    <input type="text" id="regNome" placeholder="Seu nome completo" />
-                    <input type="email" id="regEmail" placeholder="Seu email" />
-                    <input type="password" id="regPassword" placeholder="Sua senha (mínimo 6 caracteres)" />
-
-                    <button class="btn btn-success" id="btnRegistrar">
-                        <i class="fas fa-check"></i> Criar conta
-                    </button>
-
-                    <div id="regError"></div>
-
-                    <button class="btn-voltar" id="btnVoltarLogin">
-                        <i class="fas fa-arrow-left"></i> Voltar para o login
-                    </button>
-                </div>
-
-                <!-- RECUPERAÇÃO DE SENHA -->
-                <div id="recuperacaoForm" style="display: none;">
-                    <h3><i class="fas fa-key"></i> Recuperar Senha</h3>
-                    <p>Digite seu email para receber o link de recuperação</p>
-
-                    <input type="email" id="recuperacaoEmail" placeholder="Seu email" />
-
-                    <button class="btn btn-primary" id="btnEnviarRecuperacao">
-                        <i class="fas fa-paper-plane"></i> Enviar link
-                    </button>
-
-                    <div id="recuperacaoMensagem"></div>
-
-                    <button class="btn-voltar" id="btnVoltarLoginRecuperacao">
-                        <i class="fas fa-arrow-left"></i> Voltar para o login
-                    </button>
-                </div>
-
-                <!-- NOVA SENHA (após clicar no link do e-mail de recuperação) -->
-                <div id="novaSenhaForm" style="display: none;">
-                    <h3><i class="fas fa-lock"></i> Definir Nova Senha</h3>
-                    <p>Digite e confirme sua nova senha</p>
-
-                    <input type="password" id="novaSenha" placeholder="Nova senha (mínimo 6 caracteres)" />
-                    <input type="password" id="novaSenhaConfirmar" placeholder="Confirme a nova senha" />
-
-                    <button class="btn btn-primary" id="btnSalvarNovaSenha">
-                        <i class="fas fa-check"></i> Salvar nova senha
-                    </button>
-
-                    <div id="novaSenhaError" class="login-error"></div>
-                </div>
+                <!-- REMOVIDO: REGISTRO FORM -->
+                <!-- REMOVIDO: RECUPERAÇÃO DE SENHA (opcional, pode manter se quiser) -->
             </div>
         </div>
     </div>
@@ -140,6 +86,7 @@
                 </div>
             </header>
 
+            <!-- Filtros -->
             <div class="filters">
                 <div class="filter-group">
                     <label for="filtroLocal"><i class="fas fa-map-pin"></i> Local</label>
@@ -151,11 +98,12 @@
                 </div>
                 <div class="filter-group">
                     <label for="filtroStatus"><i class="fas fa-circle"></i> Status</label>
-                    <!-- As opções de status (Encaminhado, Em espera, etc.) são geradas
-                         via APP.popularStatusSelects() a partir de APP.STATUS_MAP em
-                         config.js — não edite aqui, edite lá. -->
                     <select id="filtroStatus">
                         <option value="todos">Todos os status</option>
+                        <option value="encaminhado">Encaminhado</option>
+                        <option value="espera">Em espera</option>
+                        <option value="atendimento">Em atendimento</option>
+                        <option value="concluido">Concluído</option>
                     </select>
                 </div>
                 <div class="filter-actions">
@@ -164,6 +112,7 @@
                 </div>
             </div>
 
+            <!-- Tabela -->
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -240,7 +189,10 @@
             <label for="modalLocal">Local de origem</label><input type="text" id="modalLocal" placeholder="Ex: Asilo São José, Clínica UFPR" />
             <div class="row">
                 <div class="col"><label for="modalStatus">Status</label>
-                    <select id="modalStatus" class="status-select"></select>
+                    <select id="modalStatus" class="status-select">
+                        <option value="encaminhado">Encaminhado</option><option value="espera" selected>Em espera</option>
+                        <option value="atendimento">Em atendimento</option><option value="concluido">Concluído</option>
+                    </select>
                 </div>
             </div>
             <label>Encaminhamentos</label>
