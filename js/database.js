@@ -34,12 +34,13 @@
     };
 
     // ============================================================
-    // CARREGAR PACIENTES
+    // CARREGAR PACIENTES (CORRIGIDO)
     // ============================================================
     APP.carregarPacientes = async function() {
         try {
             console.log('🔄 Carregando pacientes...');
 
+            // Verifica autenticação via sessão local
             const sessao = localStorage.getItem('odontogest_sessao');
             if (!sessao) {
                 console.warn('⚠️ Usuário não autenticado.');
@@ -55,15 +56,34 @@
                 .select('*')
                 .order('id', { ascending: true });
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Erro do Supabase:', error);
+                // Fallback para dados locais
+                const local = localStorage.getItem(CONFIG.STORAGE_KEY);
+                APP.pacientes = local ? JSON.parse(local) : [];
+                if (typeof APP.renderizarTabela === 'function') APP.renderizarTabela();
+                if (typeof APP.popularSelects === 'function') APP.popularSelects();
+                APP.mostrarToast('⚠️ Erro ao carregar da nuvem - usando dados locais', '#8a6a3a');
+                return APP.pacientes;
+            }
 
-            if (data && data.length > 0) {
-                APP.pacientes = data;
+            // ✅ FILTRA DADOS INVÁLIDOS
+            const dadosValidos = (data || [])
+                .filter(p => p !== null && p !== undefined)
+                .filter(p => p.nome !== null && p.nome !== undefined);
+
+            if (dadosValidos && dadosValidos.length > 0) {
+                APP.pacientes = dadosValidos;
                 APP.salvarDadosLocal();
                 APP.mostrarToast(`📥 ${APP.pacientes.length} pacientes carregados!`, '#1a6a4a');
             } else {
                 const local = localStorage.getItem(CONFIG.STORAGE_KEY);
                 APP.pacientes = local ? JSON.parse(local) : [];
+                if (APP.pacientes.length > 0) {
+                    APP.mostrarToast(`📥 ${APP.pacientes.length} pacientes carregados do cache!`, '#1a6a4a');
+                } else {
+                    APP.mostrarToast('📋 Nenhum paciente cadastrado', '#8a6a3a');
+                }
             }
 
             if (typeof APP.renderizarTabela === 'function') APP.renderizarTabela();
@@ -71,6 +91,7 @@
             return APP.pacientes;
         } catch (error) {
             console.error('❌ Erro ao carregar:', error);
+            // Fallback para dados locais
             const local = localStorage.getItem(CONFIG.STORAGE_KEY);
             APP.pacientes = local ? JSON.parse(local) : [];
             if (typeof APP.renderizarTabela === 'function') APP.renderizarTabela();
@@ -133,7 +154,7 @@
     };
 
     // ============================================================
-    // SINCRONIZAR (CORRIGIDO - COM FILTRO DE DADOS INVÁLIDOS)
+    // SINCRONIZAR (MERGE POR TIMESTAMP - SEGURO)
     // ============================================================
     APP.sincronizar = async function() {
         const btnSync = document.getElementById('btnSincronizarFlutuante');
@@ -163,8 +184,11 @@
             if (error) throw error;
 
             // ✅ FILTRA PACIENTES INVÁLIDOS
-            const local = (APP.pacientes || []).filter(p => p && p.id !== undefined && p.id !== null);
-            const nuvem = (dadosNuvem || []).filter(p => p && p.id !== undefined && p.id !== null);
+            const local = (APP.pacientes || [])
+                .filter(p => p && p.id !== undefined && p.id !== null && p.nome);
+            
+            const nuvem = (dadosNuvem || [])
+                .filter(p => p && p.id !== undefined && p.id !== null && p.nome);
 
             const dadosNuvemMap = new Map(nuvem.map(p => [p.id, p]));
 
