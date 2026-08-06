@@ -18,6 +18,39 @@
     };
 
     // ============================================================
+    // SANITIZAR LISTA DE PACIENTES
+    // ============================================================
+    // Remove entradas nulas/indefinidas ou sem "nome". Isso protege a
+    // interface (ui.js) de quebrar com "Cannot read properties of null
+    // (reading 'nome')". Esse tipo de entrada inválida pode entrar no
+    // localStorage se, por exemplo, um INSERT/UPDATE no Supabase for bem
+    // sucedido mas a policy de RLS não permitir o SELECT de volta — nesse
+    // caso "data[0]" vem undefined, e JSON.stringify converte undefined
+    // dentro de um array em null.
+    APP.sanitizarPacientes = function(arr) {
+        return (Array.isArray(arr) ? arr : [])
+            .filter(p => p !== null && p !== undefined && typeof p === 'object')
+            .filter(p => p.nome !== null && p.nome !== undefined && p.nome !== '');
+    };
+
+    function carregarCacheLocal() {
+        try {
+            const local = localStorage.getItem(CONFIG.STORAGE_KEY);
+            const parsed = local ? JSON.parse(local) : [];
+            const limpo = APP.sanitizarPacientes(parsed);
+            // Se havia lixo no cache, regrava já limpo para não repetir o erro.
+            if (limpo.length !== (parsed || []).length) {
+                console.warn(`⚠️ Cache local continha ${(parsed || []).length - limpo.length} registro(s) inválido(s); removidos.`);
+                localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(limpo));
+            }
+            return limpo;
+        } catch (e) {
+            console.error('❌ Erro ao ler cache local:', e);
+            return [];
+        }
+    }
+
+    // ============================================================
     // TESTAR CONEXÃO
     // ============================================================
     APP.testarConexao = async function() {
