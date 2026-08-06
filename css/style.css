@@ -2,6 +2,14 @@
    MENU MAIS - CORREÇÕES
    ============================================================ */
 
+/* Wrapper do botão "Mais" — precisa de position:relative para que o
+   dropdown (position:absolute) se posicione corretamente logo abaixo
+   do botão. Sem isso, o menu pode aparecer fora do lugar. */
+.dropdown-more {
+    position: relative;
+    display: inline-block;
+}
+
 /* Garantir que os itens do dropdown estejam visíveis */
 .dropdown-more-content {
     display: none;
