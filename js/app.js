@@ -10,6 +10,9 @@
     APP.dentesSelecionados = APP.dentesSelecionados || new Set();
     APP.usuarioAtual = APP.usuarioAtual || null;
 
+    // ============================================================
+    // INICIALIZAÇÃO
+    // ============================================================
     APP.init = async function() {
         if (APP._iniciado) {
             console.warn('⚠️ APP.init() chamado mais de uma vez — ignorando.');
@@ -42,6 +45,9 @@
         }
     };
 
+    // ============================================================
+    // CONFIGURAÇÃO DE EVENTOS
+    // ============================================================
     APP.configurarEventos = function() {
         console.log('🔧 Configurando eventos...');
 
@@ -124,6 +130,10 @@
 
         console.log('✅ Eventos configurados!');
     };
+
+    // ============================================================
+    // FUNÇÕES DE CADASTRO
+    // ============================================================
 
     APP.abrirCadastro = function() {
         console.log('🟢 Abrindo cadastro...');
@@ -227,6 +237,10 @@
         }
     };
 
+    // ============================================================
+    // FUNÇÕES DE ENCAMINHAMENTOS E EXAMES
+    // ============================================================
+
     APP.atualizarListaEncaminhamentos = function() {
         const modalEncList = document.getElementById('modalEncList');
         if (!modalEncList) return;
@@ -280,6 +294,10 @@
         });
         return selecionados;
     };
+
+    // ============================================================
+    // FUNÇÕES DE DETALHES, EDIÇÃO E EXCLUSÃO
+    // ============================================================
 
     APP.abrirDetalhes = function(id) {
         const paciente = APP.pacientes.find(p => p.id === id);
@@ -396,6 +414,10 @@
             APP.mostrarToast('❌ Erro ao alterar status', '#7a3a3a');
         }
     };
+
+    // ============================================================
+    // FUNÇÕES DE PDF E EXPORT
+    // ============================================================
 
     APP.gerarPDF = function() {
         console.log('🟢 Gerando PDF...');
@@ -517,7 +539,7 @@
     };
 
     // ============================================================
-    // MENU MAIS E SINCRONIZAÇÃO FLUTUANTE
+    // MENU MAIS E SINCRONIZAÇÃO FLUTUANTE (CORRIGIDO)
     // ============================================================
 
     function configurarMenuMais() {
@@ -526,17 +548,28 @@
         const dropdown = document.getElementById('dropdownMais');
 
         if (!btnMais || !dropdown) {
-            console.warn('⚠️ Menu "Mais" não encontrado');
+            console.warn('⚠️ Menu "Mais" não encontrado no HTML');
             return;
         }
+
+        const itens = dropdown.querySelectorAll('.dropdown-item');
+        if (itens.length === 0) {
+            console.warn('⚠️ Nenhum item encontrado no dropdown!');
+            return;
+        }
+        
+        console.log(`   - ${itens.length} itens encontrados no dropdown`);
 
         btnMais.addEventListener('click', function(e) {
             e.stopPropagation();
             dropdown.classList.toggle('active');
+            console.log(`🔄 Menu ${dropdown.classList.contains('active') ? 'aberto' : 'fechado'}`);
         });
 
         document.addEventListener('click', function() {
-            dropdown.classList.remove('active');
+            if (dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+            }
         });
 
         dropdown.querySelectorAll('.dropdown-item').forEach(item => {
@@ -573,13 +606,19 @@
 
     function removerBotoesAntigos() {
         console.log('🔧 Removendo botões antigos do header...');
-        const botoesParaRemover = ['btnGerarPDF', 'btnExportarJSON', 'btnImportarJSON', 'btnLogout'];
+        
+        const botoesParaRemover = [
+            'btnGerarPDF',
+            'btnExportarJSON',
+            'btnImportarJSON',
+            'btnLogout'
+        ];
 
         botoesParaRemover.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.style.display = 'none';
-                console.log(`   - ${id} ocultado`);
+                console.log(`   - ${id} ocultado do header`);
             }
         });
 
@@ -587,33 +626,60 @@
         if (statusConexao) {
             statusConexao.style.display = 'none';
         }
-        console.log('✅ Botões antigos ocultados');
+        
+        console.log('✅ Botões antigos ocultados do header');
     }
 
     function initNovasConfiguracoes() {
         console.log('🔧 Inicializando novas configurações...');
+        
         configurarMenuMais();
         configurarSincronizacaoFlutuante();
         removerBotoesAntigos();
-
+        
+        // Reconecta os eventos dos botões do menu
         const btnPDF = document.getElementById('btnGerarPDF');
         if (btnPDF && typeof APP.gerarPDF === 'function') {
-            btnPDF.addEventListener('click', APP.gerarPDF);
+            const novoBtnPDF = btnPDF.cloneNode(true);
+            btnPDF.parentNode.replaceChild(novoBtnPDF, btnPDF);
+            novoBtnPDF.addEventListener('click', function() {
+                console.log('🟢 PDF via menu');
+                APP.gerarPDF();
+            });
+            console.log('   - Evento PDF reconectado');
         }
 
         const btnExportar = document.getElementById('btnExportarJSON');
         if (btnExportar && typeof APP.exportarJSON === 'function') {
-            btnExportar.addEventListener('click', APP.exportarJSON);
+            const novoBtnExportar = btnExportar.cloneNode(true);
+            btnExportar.parentNode.replaceChild(novoBtnExportar, btnExportar);
+            novoBtnExportar.addEventListener('click', function() {
+                console.log('🟢 Exportar via menu');
+                APP.exportarJSON();
+            });
+            console.log('   - Evento Exportar reconectado');
         }
 
         const btnImportar = document.getElementById('btnImportarJSON');
         if (btnImportar && typeof APP.importarJSON === 'function') {
-            btnImportar.addEventListener('click', APP.importarJSON);
+            const novoBtnImportar = btnImportar.cloneNode(true);
+            btnImportar.parentNode.replaceChild(novoBtnImportar, btnImportar);
+            novoBtnImportar.addEventListener('click', function() {
+                console.log('🟢 Importar via menu');
+                APP.importarJSON();
+            });
+            console.log('   - Evento Importar reconectado');
         }
 
         const btnLogout = document.getElementById('btnLogout');
         if (btnLogout && typeof APP.fazerLogout === 'function') {
-            btnLogout.addEventListener('click', APP.fazerLogout);
+            const novoBtnLogout = btnLogout.cloneNode(true);
+            btnLogout.parentNode.replaceChild(novoBtnLogout, btnLogout);
+            novoBtnLogout.addEventListener('click', function() {
+                console.log('🟢 Logout via menu');
+                APP.fazerLogout();
+            });
+            console.log('   - Evento Logout reconectado');
         }
 
         console.log('✅ Novas configurações finalizadas!');
