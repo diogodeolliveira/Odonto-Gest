@@ -604,46 +604,37 @@
         console.log('✅ Sincronização flutuante configurada');
     }
 
-    function removerBotoesAntigos() {
-        console.log('🔧 Removendo botões antigos do header...');
-        
-        const botoesParaRemover = [
-            'btnGerarPDF',
-            'btnExportarJSON',
-            'btnImportarJSON',
-            'btnLogout'
-        ];
-
-        botoesParaRemover.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.display = 'none';
-                console.log(`   - ${id} ocultado do header`);
-            }
-        });
-
-        const statusConexao = document.getElementById('statusConexao');
-        if (statusConexao) {
-            statusConexao.style.display = 'none';
-        }
-        
-        console.log('✅ Botões antigos ocultados do header');
-    }
+    // NOTA: A função removerBotoesAntigos() foi removida.
+    // Ela era resíduo de uma versão anterior em que existiam botões
+    // duplicados fora do dropdown (no header). Como btnGerarPDF,
+    // btnExportarJSON, btnImportarJSON e btnLogout hoje existem
+    // APENAS dentro do dropdown "Mais", essa função estava aplicando
+    // display:none nos próprios itens do menu, deixando-os invisíveis
+    // mesmo com o menu aberto. Por isso o menu "não funcionava".
 
     function initNovasConfiguracoes() {
         console.log('🔧 Inicializando novas configurações...');
-        
+
         configurarMenuMais();
         configurarSincronizacaoFlutuante();
-        removerBotoesAntigos();
-        
-        // Reconecta os eventos dos botões do menu
+
+        const dropdown = document.getElementById('dropdownMais');
+        const fecharMenu = function() {
+            if (dropdown) dropdown.classList.remove('active');
+        };
+
+        // Reconecta os eventos dos botões do menu.
+        // Usamos cloneNode+replaceChild só para remover listeners antigos
+        // (ex: auth.js já registra um listener direto no botão de logout).
+        // Depois de trocar o nó, reconectamos também o fechamento do
+        // dropdown, que se perde ao substituir o elemento.
         const btnPDF = document.getElementById('btnGerarPDF');
         if (btnPDF && typeof APP.gerarPDF === 'function') {
             const novoBtnPDF = btnPDF.cloneNode(true);
             btnPDF.parentNode.replaceChild(novoBtnPDF, btnPDF);
             novoBtnPDF.addEventListener('click', function() {
                 console.log('🟢 PDF via menu');
+                fecharMenu();
                 APP.gerarPDF();
             });
             console.log('   - Evento PDF reconectado');
@@ -655,6 +646,7 @@
             btnExportar.parentNode.replaceChild(novoBtnExportar, btnExportar);
             novoBtnExportar.addEventListener('click', function() {
                 console.log('🟢 Exportar via menu');
+                fecharMenu();
                 APP.exportarJSON();
             });
             console.log('   - Evento Exportar reconectado');
@@ -666,6 +658,7 @@
             btnImportar.parentNode.replaceChild(novoBtnImportar, btnImportar);
             novoBtnImportar.addEventListener('click', function() {
                 console.log('🟢 Importar via menu');
+                fecharMenu();
                 APP.importarJSON();
             });
             console.log('   - Evento Importar reconectado');
@@ -677,6 +670,7 @@
             btnLogout.parentNode.replaceChild(novoBtnLogout, btnLogout);
             novoBtnLogout.addEventListener('click', function() {
                 console.log('🟢 Logout via menu');
+                fecharMenu();
                 APP.fazerLogout();
             });
             console.log('   - Evento Logout reconectado');
