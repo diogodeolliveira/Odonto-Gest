@@ -83,10 +83,6 @@
                         <button id="btnLogout" class="menu-item-danger"><i class="fas fa-sign-out-alt"></i> Sair</button>
                     </div>
                 </div>
-
-                <button class="btn-icon-menu btn-sync-icon" id="btnSincronizar" aria-label="Sincronizar" title="Sincronizar">
-                    <i class="fas fa-sync"></i>
-                </button>
             </header>
 
             <div class="filters">
@@ -126,7 +122,12 @@
 
             <div class="footer-info">
                 <span id="contadorRegistros">0 pacientes</span>
-                <span><i class="fas fa-cloud-upload-alt"></i> Dados sincronizados na nuvem</span>
+                <span class="footer-sync">
+                    <button id="btnSincronizar" class="btn-sync-footer" aria-label="Sincronizar" title="Sincronizar">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                    Dados sincronizados na nuvem
+                </span>
             </div>
         </div>
     </div>
