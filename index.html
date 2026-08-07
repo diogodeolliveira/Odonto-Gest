@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OdontoGest · Sistema de Pacientes</title>
+
+    <!-- ===== FAVICON ===== -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+    <!-- ===== FONTES E ÍCONES ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- ===== BIBLIOTECAS EXTERNAS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- ===== CSS PRINCIPAL ===== -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- TELA DE LOGIN -->
+    <!-- ============================================================ -->
+    <div id="loginContainer">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <i class="fas fa-tooth"></i>
+                    <h2>OdontoGest</h2>
+                    <p>Gerencie seus pacientes com segurança</p>
+                </div>
+
+                <!-- LOGIN -->
+                <div id="loginForm">
+                    <input type="email" id="loginEmail" placeholder="Seu email" />
+                    <input type="password" id="loginPassword" placeholder="Sua senha" />
+
+                    <button class="btn btn-primary" id="btnLogin">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+
+                    <div class="login-error" id="loginError"></div>
+                    <div class="login-success" id="loginSuccess"></div>
+
+                    <hr />
+
+                    <button class="btn btn-secondary" id="btnMostrarRegistro">
+                        <i class="fas fa-user-plus"></i> Criar minha conta
+                    </button>
+
+                    <button class="btn btn-outline" id="btnEsqueciSenha" style="margin-top: 0.8rem;">
+                        <i class="fas fa-key"></i> Esqueci minha senha
+                    </button>
+                </div>
+
+                <!-- REGISTRO -->
+                <div id="registroForm" style="display: none;">
+                    <h3><i class="fas fa-user-plus"></i> Criar Conta</h3>
+                    <p>Preencha os dados abaixo para começar</p>
+
+                    <input type="text" id="regNome" placeholder="Seu nome completo" />
+                    <input type="email" id="regEmail" placeholder="Seu email" />
+                    <input type="password" id="regPassword" placeholder="Sua senha (mínimo 6 caracteres)" />
+
+                    <button class="btn btn-success" id="btnRegistrar">
+                        <i class="fas fa-check"></i> Criar conta
+                    </button>
+
+                    <div id="regError"></div>
+
+                    <button class="btn-voltar" id="btnVoltarLogin">
+                        <i class="fas fa-arrow-left"></i> Voltar para o login
+                    </button>
+                </div>
+
+                <!-- RECUPERAÇÃO DE SENHA -->
+                <div id="recuperacaoForm" style="display: none;">
+                    <h3><i class="fas fa-key"></i> Recuperar Senha</h3>
+                    <p>Digite seu email para receber o link de recuperação</p>
+
+                    <input type="email" id="recuperacaoEmail" placeholder="Seu email" />
+
+                    <button class="btn btn-primary" id="btnEnviarRecuperacao">
+                        <i class="fas fa-paper-plane"></i> Enviar link
+                    </button>
+
+                    <div id="recuperacaoMensagem"></div>
+
+                    <button class="btn-voltar" id="btnVoltarLoginRecuperacao">
+                        <i class="fas fa-arrow-left"></i> Voltar para o login
+                    </button>
+                </div>
+
+                <!-- NOVA SENHA (após clicar no link do e-mail de recuperação) -->
+                <div id="novaSenhaForm" style="display: none;">
+                    <h3><i class="fas fa-lock"></i> Definir Nova Senha</h3>
+                    <p>Digite e confirme sua nova senha</p>
+
+                    <input type="password" id="novaSenha" placeholder="Nova senha (mínimo 6 caracteres)" />
+                    <input type="password" id="novaSenhaConfirmar" placeholder="Confirme a nova senha" />
+
+                    <button class="btn btn-primary" id="btnSalvarNovaSenha">
+                        <i class="fas fa-check"></i> Salvar nova senha
+                    </button>
+
+                    <div id="novaSenhaError" class="login-error"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SISTEMA PRINCIPAL -->
+    <!-- ============================================================ -->
+    <div id="sistemaPrincipal" style="display: none;">
+        <div class="container">
+            <header>
+                <div class="header-left">
+                    <img src="images/tooth-icon.svg" alt="OdontoGest" class="logo-icon-small">
+                    <h1><i class="fas fa-tooth"></i> OdontoGest</h1>
+                    <span class="subtitle">Cadastro · odontograma · dados na nuvem</span>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="buscaPacientes" placeholder="Buscar paciente..." class="search-input">
+                        <span id="buscaLimpar" class="search-clear" style="display:none;">✕</span>
+                    </div>
+                    <span id="statusConexao" class="status-online"><i class="fas fa-cloud"></i> Conectado</span>
+                    <span id="usuarioLogado" class="status-user"><i class="fas fa-user"></i> Carregando...</span>
+                    <button class="btn btn-danger" id="btnLogout"><i class="fas fa-sign-out-alt"></i> Sair</button>
+                    <button class="btn btn-sync" id="btnSincronizar"><i class="fas fa-sync"></i> Sincronizar</button>
+                    <button class="btn btn-pdf" id="btnGerarPDF"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn btn-export" id="btnExportarJSON"><i class="fas fa-download"></i> Exportar</button>
+                    <button class="btn btn-import" id="btnImportarJSON"><i class="fas fa-upload"></i> Importar</button>
+                    <button class="btn btn-success" id="btnAbrirModalCadastro"><i class="fas fa-user-plus"></i> Novo</button>
+                </div>
+            </header>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filtroLocal"><i class="fas fa-map-pin"></i> Local</label>
+                    <select id="filtroLocal"><option value="todos">Todos os locais</option></select>
+                </div>
+                <div class="filter-group">
+                    <label for="filtroEncaminhamento"><i class="fas fa-share-alt"></i> Encaminhamento</label>
+                    <select id="filtroEncaminhamento"><option value="todos">Todos</option></select>
+                </div>
+                <div class="filter-group">
+                    <label for="filtroStatus"><i class="fas fa-circle"></i> Status</label>
+                    <!-- As opções de status (Encaminhado, Em espera, etc.) são geradas
+                         via APP.popularStatusSelects() a partir de APP.STATUS_MAP em
+                         config.js — não edite aqui, edite lá. -->
+                    <select id="filtroStatus">
+                        <option value="todos">Todos os status</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-primary" id="btnFiltrar"><i class="fas fa-search"></i> Filtrar</button>
+                    <button class="btn btn-outline" id="btnLimparFiltros"><i class="fas fa-undo-alt"></i> Limpar</button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Paciente</th><th>Local</th><th>Encaminhamentos</th><th>Status</th><th style="width:120px;">Ações</th></tr>
+                    </thead>
+                    <tbody id="corpoTabela">
+                        <tr><td colspan="5" class="empty-message"><i class="fas fa-spinner fa-spin"></i> Carregando pacientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer-info">
+                <span id="contadorRegistros">0 pacientes</span>
+                <span><i class="fas fa-cloud-upload-alt"></i> Dados sincronizados na nuvem</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RELATÓRIO PDF OCULTO ===== -->
+    <div id="relatorioContainer">
+        <h1><i class="fas fa-tooth"></i> OdontoGest - Relatório de Pacientes</h1>
+        <div class="relatorio-header">
+            <span>Data: <span id="relatorioData"></span></span>
+            <span>Filtros: <span id="relatorioFiltros"></span></span>
+        </div>
+        <table>
+            <thead><tr><th>#</th><th>Paciente</th><th>Idade</th><th>Contato</th><th>Encaminhamento</th><th>Status</th><th>Odontograma</th></tr></thead>
+            <tbody id="relatorioCorpo"></tbody>
+        </table>
+        <div class="relatorio-footer">Relatório gerado pelo OdontoGest</div>
+    </div>
+
+    <!-- ===== MODAIS ===== -->
+    <!-- Modal Detalhes -->
+    <div class="modal-overlay" id="modalDetalhes">
+        <div class="modal">
+            <button class="close-modal" id="fecharDetalhes">&times;</button>
+            <h2><i class="fas fa-user-circle"></i> <span id="detalhesNome"></span></h2>
+            <div class="info-grid">
+                <div class="item"><span class="label"><i class="fas fa-phone"></i> Telefone</span><span class="value" id="detalhesTelefone">—</span></div>
+                <div class="item"><span class="label"><i class="fas fa-calendar-alt"></i> Idade</span><span class="value" id="detalhesIdade">—</span></div>
+                <div class="item"><span class="label"><i class="fas fa-map-marker-alt"></i> Local</span><span class="value" id="detalhesLocal">—</span></div>
+                <div class="item"><span class="label"><i class="fas fa-circle"></i> Status</span><span class="value" id="detalhesStatus">—</span></div>
+                <div class="item"><span class="label"><i class="fas fa-share-alt"></i> Encaminhamentos</span><span class="value" id="detalhesEncaminhamentos">—</span></div>
+                <div class="item"><span class="label"><i class="fas fa-heartbeat"></i> Comorbidades</span><span class="value" id="detalhesComorbidades">—</span></div>
+                <div class="item"><span class="label"><i class="fas fa-pills"></i> Medicações</span><span class="value" id="detalhesMedicacoes">—</span></div>
+                <div class="item full-width"><span class="label"><i class="fas fa-flask"></i> Exames</span><span class="value" id="detalhesExames">—</span></div>
+                <div class="item full-width"><span class="label"><i class="fas fa-teeth"></i> Odontograma</span><span class="value" id="detalhesDentes">—</span></div>
+            </div>
+            <div class="observacao-box"><span class="label"><i class="fas fa-pencil-alt"></i> Observação</span><div class="value" id="detalhesObservacao">—</div></div>
+            <div class="odontograma-container">
+                <div class="arcada-label">SUPERIOR</div>
+                <div class="arcada-superior" id="detalhesArcadaSuperior"></div>
+                <div class="arcada-label">INFERIOR</div>
+                <div class="arcada-inferior" id="detalhesArcadaInferior"></div>
+                <div class="odontograma-legenda"><span><span class="legenda-cor"></span> Em tratamento</span><span><i class="far fa-circle"></i> Não selecionado</span></div>
+            </div>
+            <div class="modal-actions"><button class="btn btn-secondary" id="fecharDetalhesBtn">Fechar</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Cadastro -->
+    <div class="modal-overlay modal-cadastro" id="modalCadastro">
+        <div class="modal">
+            <button class="close-modal" id="fecharCadastro">&times;</button>
+            <h2 id="modalTitulo"><i class="fas fa-user-md"></i> Novo Paciente</h2>
+            <p style="color:#3a5f6b; margin-bottom:0.5rem;" id="modalSubtitulo">Preencha todos os dados abaixo</p>
+            <input type="hidden" id="modalEditId" value="">
+            <label for="modalNome">Nome completo</label><input type="text" id="modalNome" placeholder="Ex: Maria Aparecida" />
+            <div class="row">
+                <div class="col"><label for="modalTelefone">Telefone</label><input type="text" id="modalTelefone" placeholder="(41) 99999-9999" /></div>
+                <div class="col"><label for="modalIdade">Idade</label><input type="number" id="modalIdade" placeholder="Ex: 65" min="0" max="120" /></div>
+            </div>
+            <label for="modalLocal">Local de origem</label><input type="text" id="modalLocal" placeholder="Ex: Asilo São José, Clínica UFPR" />
+            <div class="row">
+                <div class="col"><label for="modalStatus">Status</label>
+                    <select id="modalStatus" class="status-select"></select>
+                </div>
+            </div>
+            <label>Encaminhamentos</label>
+            <div class="multi-enc-group">
+                <select id="modalEncSelect">
+                    <option value="Ortodontia">Ortodontia</option><option value="Endodontia">Endodontia</option>
+                    <option value="Prótese">Prótese</option><option value="Periodontia">Periodontia</option>
+                    <option value="Cirurgia">Cirurgia</option><option value="Implantodontia">Implantodontia</option>
+                    <option value="Clínica Geral">Clínica Geral</option><option value="Odontopediatria">Odontopediatria</option>
+                    <option value="outro">+ Outro</option>
+                </select>
+                <button class="btn" id="btnAddEncaminhamento"><i class="fas fa-plus-circle"></i> Adicionar</button>
+            </div>
+            <div class="enc-list" id="modalEncList"><span style="color:#8ba3ae;font-size:0.85rem;">Nenhum encaminhamento</span></div>
+            <div class="row">
+                <div class="col"><label for="modalComorbidades">Comorbidades</label><input type="text" id="modalComorbidades" placeholder="Ex: Diabetes, Hipertensão" /><span class="sub-label">Separe por vírgula</span></div>
+                <div class="col"><label for="modalMedicacoes">Medicações</label><input type="text" id="modalMedicacoes" placeholder="Ex: Losartana, Metformina" /><span class="sub-label">Separe por vírgula</span></div>
+            </div>
+            <label>Exames Complementares</label>
+            <div class="checkbox-group" id="examesCheckboxGroup">
+                <label><input type="checkbox" value="Radiografia panorâmica"> Radiografia panorâmica</label>
+                <label><input type="checkbox" value="Tomografia"> Tomografia</label>
+                <label><input type="checkbox" value="Ressonância"> Ressonância</label>
+                <label><input type="checkbox" value="Hemograma completo"> Hemograma completo</label>
+                <label><input type="checkbox" value="Hemoglobina glicada"> Hemoglobina glicada</label>
+            </div>
+            <label>Odontograma</label>
+            <div class="odontograma-container">
+                <div class="arcada-label">SUPERIOR</div>
+                <div class="arcada-superior" id="arcadaSuperiorCadastro"></div>
+                <div class="arcada-label">INFERIOR</div>
+                <div class="arcada-inferior" id="arcadaInferiorCadastro"></div>
+                <div class="odontograma-legenda"><span><span class="legenda-cor"></span> Em tratamento</span><span><i class="far fa-circle"></i> Não selecionado</span></div>
+            </div>
+            <label for="modalObservacao">Observação</label>
+            <textarea id="modalObservacao" placeholder="Ex: Paciente com sensibilidade no dente 36..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btnCancelarCadastro">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarPaciente"><i class="fas fa-save"></i> Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="js/config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/odontograma.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
