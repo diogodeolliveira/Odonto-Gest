@@ -272,7 +272,6 @@ header {
     margin-bottom: 1.5rem;
     position: relative;
     padding-right: 50px;
-    min-height: 88px;
 }
 
 .header-left {
@@ -555,23 +554,35 @@ header {
     color: #1e7e8c;
 }
 
-/* Botão "Sincronizar" minimalista, alinhado embaixo do ícone de três pontinhos */
-.btn-sync-icon {
-    position: absolute;
-    top: 46px;
-    right: 0;
-    z-index: 40;
-    color: #4a6a8a;
+/* Botão "Sincronizar" no rodapé, no lugar do ícone da nuvem */
+.footer-sync {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.btn-sync-icon:hover {
-    background: #eef0f8;
-    border-color: #8b9dc0;
-    color: #2a4a6a;
+.btn-sync-footer {
+    background: none;
+    border: none;
+    color: #3f6979;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.15s;
+    line-height: 1;
 }
 
-.btn-sync-icon.sincronizando {
-    opacity: 0.6;
+.btn-sync-footer:hover {
+    color: #1e7e8c;
+    transform: scale(1.15);
+}
+
+.btn-sync-footer.sincronizando {
+    color: #1e7e8c;
+    opacity: 0.7;
     cursor: wait;
     pointer-events: none;
 }
