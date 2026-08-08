@@ -226,6 +226,19 @@
             }
         });
 
+        // Máscara de telefone — aplica enquanto digita e ao sair do campo.
+        // Backspace/Delete funcionam normalmente pois a máscara é sempre
+        // recalculada a partir dos dígitos restantes no campo.
+        const modalTelefone = document.getElementById('modalTelefone');
+        if (modalTelefone) {
+            modalTelefone.addEventListener('input', function() {
+                this.value = APP.formatarTelefone(this.value);
+            });
+            modalTelefone.addEventListener('blur', function() {
+                this.value = APP.formatarTelefone(this.value);
+            });
+        }
+
         console.log('✅ Eventos configurados!');
     };
 
@@ -259,7 +272,7 @@
     APP.salvarPaciente = async function() {
         console.log('🟢 Salvando paciente...');
         const nome = document.getElementById('modalNome').value.trim();
-        const telefone = document.getElementById('modalTelefone').value.trim();
+        const telefone = document.getElementById('modalTelefone').value.replace(/\D/g, '');
         const idade = parseInt(document.getElementById('modalIdade').value);
         const local = document.getElementById('modalLocal').value.trim();
         const observacao = document.getElementById('modalObservacao').value.trim();
@@ -402,7 +415,7 @@
         if (!paciente) return;
 
         document.getElementById('detalhesNome').textContent = paciente.nome;
-        document.getElementById('detalhesTelefone').textContent = paciente.telefone || '—';
+        document.getElementById('detalhesTelefone').textContent = APP.formatarTelefone(paciente.telefone) || '—';
         document.getElementById('detalhesIdade').textContent = paciente.idade ? `${paciente.idade} anos` : '—';
         document.getElementById('detalhesLocal').innerHTML = `<span class="badge badge-local"><i class="fas fa-map-marker-alt"></i> ${APP.escapeHTML(paciente.local)}</span>`;
         document.getElementById('detalhesStatus').innerHTML = APP.getStatusBadge(paciente.status, false);
@@ -434,7 +447,7 @@
         document.getElementById('modalSubtitulo').textContent = 'Altere os dados necessários abaixo';
 
         document.getElementById('modalNome').value = paciente.nome;
-        document.getElementById('modalTelefone').value = paciente.telefone || '';
+        document.getElementById('modalTelefone').value = APP.formatarTelefone(paciente.telefone || '');
         document.getElementById('modalIdade').value = paciente.idade || '';
         document.getElementById('modalLocal').value = paciente.local;
         document.getElementById('modalStatus').value = paciente.status || (APP.STATUS_PADRAO || 'espera');
@@ -542,7 +555,7 @@
                     <td>${index + 1}</td>
                     <td>${APP.escapeHTML(p.nome)}</td>
                     <td>${p.idade || '—'}</td>
-                    <td>${APP.escapeHTML(p.telefone || '—')}</td>
+                    <td>${APP.escapeHTML(APP.formatarTelefone(p.telefone) || '—')}</td>
                     <td>${encaminhamentosStr || '—'}</td>
                     <td><span class="status-badge-pdf ${APP.STATUS_MAP[p.status]?.pdfClass || ''}">${statusLabel}</span></td>
                     <td>${dentesStr}</td>
