@@ -26,25 +26,41 @@
         console.log('🚀 OdontoGest iniciado!');
 
         try {
-            const autenticado = await APP.verificarSessao();
-
-            if (autenticado) {
-                APP.configurarBusca();
-                APP.renderOdontogramaCadastro();
-                APP.configurarEventos();
-
-                setInterval(() => {
-                    if (navigator.onLine && APP.usuarioAtual) {
-                        APP.sincronizar();
-                    }
-                }, 300000);
-
-                APP.mostrarToast('📂 Sistema OdontoGest carregado!', '#1a4a58');
-            }
+            await APP.verificarSessao();
+            // A configuração de busca, odontograma, eventos de clique e
+            // sincronização automática acontece em APP.finalizarLogin(),
+            // chamada de dentro de mostrarSistema() (auth.js). Isso garante
+            // que os botões funcionem tanto no carregamento com sessão já
+            // salva quanto logo após um login novo, sem precisar de F5.
         } catch (error) {
             console.error('❌ Erro na inicialização:', error);
             APP.mostrarToast('❌ Erro ao carregar o sistema', '#7a3a3a');
         }
+    };
+
+    // ============================================================
+    // FINALIZAÇÃO PÓS-LOGIN (busca, odontograma, eventos, auto-sync)
+    // ============================================================
+    // Chamada por mostrarSistema() em auth.js — tanto no carregamento
+    // inicial (sessão já salva) quanto logo após um login bem-sucedido.
+    // A flag _eventosConfigurados garante que os addEventListener só
+    // sejam registrados UMA vez, evitando cliques duplicados caso o
+    // usuário faça logout e login novamente na mesma aba.
+    APP.finalizarLogin = function() {
+        if (APP._eventosConfigurados) return;
+        APP._eventosConfigurados = true;
+
+        APP.configurarBusca();
+        APP.renderOdontogramaCadastro();
+        APP.configurarEventos();
+
+        setInterval(() => {
+            if (navigator.onLine && APP.usuarioAtual) {
+                APP.sincronizar();
+            }
+        }, 300000);
+
+        APP.mostrarToast('📂 Sistema OdontoGest carregado!', '#1a4a58');
     };
 
     // ============================================================
