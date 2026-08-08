@@ -78,6 +78,14 @@
         if (typeof APP.carregarPacientes === 'function') {
             APP.carregarPacientes();
         }
+        // Garante que busca, odontograma, botões (Novo, Sincronizar, PDF,
+        // Exportar, Importar, filtros, menu "⋮" etc.) e a sincronização
+        // automática sejam configurados tanto no carregamento com sessão
+        // já salva quanto imediatamente após um login novo — sem precisar
+        // de F5.
+        if (typeof APP.finalizarLogin === 'function') {
+            APP.finalizarLogin();
+        }
     }
 
     // ============================================================
