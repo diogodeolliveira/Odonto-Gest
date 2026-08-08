@@ -18,7 +18,10 @@
     const APP = window.APP;
     const supabase = APP.supabase;
 
-    // Chave usada no localStorage para manter o login entre acessos
+    // Chave usada no sessionStorage para manter o login apenas durante
+    // a sessão do navegador: sobrevive a um F5, mas é apagada quando a
+    // aba/navegador é fechado (diferente do localStorage, que persiste
+    // indefinidamente).
     const LOGIN_STORAGE_KEY = 'odontogest_usuario';
 
     // ============================================================
@@ -42,7 +45,7 @@
     // ============================================================
     APP.verificarSessao = async function() {
         try {
-            const salvo = localStorage.getItem(LOGIN_STORAGE_KEY);
+            const salvo = sessionStorage.getItem(LOGIN_STORAGE_KEY);
             if (salvo) {
                 APP.usuarioAtual = JSON.parse(salvo);
                 mostrarSistema();
@@ -50,7 +53,7 @@
             }
         } catch (e) {
             console.warn('⚠️ Sessão local inválida, removendo.', e);
-            localStorage.removeItem(LOGIN_STORAGE_KEY);
+            sessionStorage.removeItem(LOGIN_STORAGE_KEY);
         }
         mostrarLogin();
         return false;
@@ -133,7 +136,7 @@
 
             console.log('✅ Login bem-sucedido!', data);
             APP.usuarioAtual = data;
-            localStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(data));
+            sessionStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(data));
 
             loginSuccess.textContent = '✅ Login realizado com sucesso!';
             loginSuccess.style.display = 'block';
@@ -156,7 +159,7 @@
     // FUNÇÃO DE LOGOUT
     // ============================================================
     function fazerLogout() {
-        localStorage.removeItem(LOGIN_STORAGE_KEY);
+        sessionStorage.removeItem(LOGIN_STORAGE_KEY);
         APP.usuarioAtual = null;
         APP.pacientes = [];
         if (typeof APP.mostrarToast === 'function') {
