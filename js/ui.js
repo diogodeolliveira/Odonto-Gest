@@ -228,6 +228,38 @@
     // ============================================================
     // FUNÇÕES AUXILIARES
     // ============================================================
+    // ============================================================
+    // MÁSCARA DE TELEFONE
+    // ============================================================
+    // Formata dígitos de telefone (só números) para exibição:
+    //   até 10 dígitos (DDD + 8) -> fixo:    (41) 3333-4444
+    //   11 dígitos (DDD + 9)     -> celular: (41) 9 8888-7777
+    // Sempre retorna apenas a máscara visual; o valor cru (só dígitos)
+    // é o que deve ser salvo no banco — use telefone.replace(/\D/g,'')
+    // ao gravar.
+    APP.formatarTelefone = function(valor) {
+        const digitos = (valor || '').replace(/\D/g, '').slice(0, 11);
+        const len = digitos.length;
+
+        if (len === 0) return '';
+        if (len <= 2) return `(${digitos}`;
+
+        const ddd = digitos.slice(0, 2);
+        const resto = digitos.slice(2);
+
+        if (len <= 10) {
+            // Fixo: até 8 dígitos após o DDD
+            if (resto.length <= 4) return `(${ddd}) ${resto}`;
+            return `(${ddd}) ${resto.slice(0, 4)}-${resto.slice(4, 8)}`;
+        }
+
+        // Celular: 9 dígitos após o DDD (nono dígito destacado)
+        const nono = resto.slice(0, 1);
+        const restante = resto.slice(1);
+        if (restante.length <= 4) return `(${ddd}) ${nono} ${restante}`;
+        return `(${ddd}) ${nono} ${restante.slice(0, 4)}-${restante.slice(4, 8)}`;
+    };
+
     APP.getStatusBadge = function(status, clickable = true) {
         const STATUS_MAP = APP.STATUS_MAP || {};
         const s = STATUS_MAP[status];
