@@ -202,7 +202,13 @@
                 document.querySelectorAll('.status-dropdown-content').forEach(d => {
                     if (d !== dropdown) d.classList.remove('active');
                 });
-                if (dropdown) dropdown.classList.toggle('active');
+                if (dropdown) {
+                    const abrindo = !dropdown.classList.contains('active');
+                    if (abrindo) {
+                        APP.posicionarDropdownStatus(this, dropdown);
+                    }
+                    dropdown.classList.toggle('active');
+                }
             });
         });
 
@@ -223,6 +229,23 @@
     // ============================================================
     document.addEventListener('click', function() {
         document.querySelectorAll('.status-dropdown-content').forEach(d => d.classList.remove('active'));
+    });
+
+    // ============================================================
+    // FECHAR DROPDOWN AO ROLAR OU REDIMENSIONAR
+    // ============================================================
+    // O dropdown agora usa position:fixed (ver style.css) para escapar
+    // do overflow do .table-wrapper e não ser cortado quando há poucos
+    // pacientes. Por não acompanhar mais o scroll de nenhum container,
+    // ele precisa ser fechado manualmente ao rolar a página (ou o
+    // próprio wrapper) e ao redimensionar a janela, senão ficaria
+    // "flutuando" desalinhado do badge que o abriu.
+    window.addEventListener('scroll', function() {
+        document.querySelectorAll('.status-dropdown-content.active').forEach(d => d.classList.remove('active'));
+    }, true); // capture:true — pega o evento de scroll de qualquer container, inclusive .table-wrapper
+
+    window.addEventListener('resize', function() {
+        document.querySelectorAll('.status-dropdown-content.active').forEach(d => d.classList.remove('active'));
     });
 
     // ============================================================
@@ -258,6 +281,37 @@
         const restante = resto.slice(1);
         if (restante.length <= 4) return `(${ddd}) ${nono} ${restante}`;
         return `(${ddd}) ${nono} ${restante.slice(0, 4)}-${restante.slice(4, 8)}`;
+    };
+
+    // ============================================================
+    // POSICIONA O DROPDOWN DE STATUS (position: fixed, relativo à viewport)
+    // ============================================================
+    // Calcula top/left com base no badge clicado, já ajustando para não
+    // ultrapassar a borda direita ou inferior da tela. Necessário porque
+    // o dropdown usa position:fixed (ver style.css) para escapar do
+    // overflow do .table-wrapper — sem isso, um dropdown position:absolute
+    // seria cortado sempre que a tabela tivesse poucos registros (pouca
+    // altura), impedindo os últimos status de aparecerem inteiros.
+    APP.posicionarDropdownStatus = function(badge, dropdown) {
+        const rect = badge.getBoundingClientRect();
+        const larguraDropdown = dropdown.offsetWidth || 150;
+
+        let left = rect.left;
+        let top = rect.bottom + 4;
+
+        // Não deixa vazar pela direita da tela
+        if (left + larguraDropdown > window.innerWidth - 8) {
+            left = window.innerWidth - larguraDropdown - 8;
+        }
+
+        // Se não couber embaixo do badge, abre para cima dele
+        const alturaEstimada = dropdown.scrollHeight || 160;
+        if (top + alturaEstimada > window.innerHeight - 8) {
+            top = rect.top - alturaEstimada - 4;
+        }
+
+        dropdown.style.left = `${Math.max(8, left)}px`;
+        dropdown.style.top = `${Math.max(8, top)}px`;
     };
 
     APP.getStatusBadge = function(status, clickable = true) {
