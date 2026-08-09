@@ -112,31 +112,32 @@
         btnLogin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
 
         try {
+            // Login via função RPC login_usuario (ver 02_supabase_login_seguro_rpc.sql).
+            // A tabela usuarios não tem policy de SELECT para anon — a
+            // validação e a leitura das credenciais acontecem só dentro da
+            // função, que roda com SECURITY DEFINER e nunca devolve a senha.
             const { data, error } = await supabase
-                .from('usuarios')
-                .select('id, username, nome_completo, perfil, ativo')
-                .eq('username', username)
-                .eq('senha', senha)
-                .eq('ativo', true)
-                .maybeSingle();
+                .rpc('login_usuario', { p_username: username, p_senha: senha });
 
             if (error) {
-                console.error('❌ Erro ao consultar usuarios:', error);
-                loginError.textContent = '❌ Erro ao conectar. Verifique a permissão de leitura (RLS) da tabela usuarios.';
+                console.error('❌ Erro ao consultar login_usuario:', error);
+                loginError.textContent = '❌ Erro ao conectar. Verifique se a função login_usuario foi criada no Supabase (script 02_supabase_login_seguro_rpc.sql).';
                 loginError.style.display = 'block';
                 return;
             }
 
-            if (!data) {
+            const usuario = Array.isArray(data) ? data[0] : data;
+
+            if (!usuario) {
                 console.warn('❌ Usuário/senha não encontrados ou usuário inativo');
                 loginError.textContent = '❌ Usuário ou senha inválidos';
                 loginError.style.display = 'block';
                 return;
             }
 
-            console.log('✅ Login bem-sucedido!', data);
-            APP.usuarioAtual = data;
-            sessionStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(data));
+            console.log('✅ Login bem-sucedido!', usuario);
+            APP.usuarioAtual = usuario;
+            sessionStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(usuario));
 
             loginSuccess.textContent = '✅ Login realizado com sucesso!';
             loginSuccess.style.display = 'block';
