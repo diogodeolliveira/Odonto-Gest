@@ -840,17 +840,19 @@ tr:hover td {
 
 .status-dropdown-content {
     display: none;
-    position: absolute;
+    /* position: fixed (em vez de absolute) para escapar do overflow do
+       .table-wrapper: com poucos pacientes a tabela fica baixa e um
+       dropdown absolute é cortado pelos limites do wrapper/tabela.
+       Com fixed, o posicionamento (top/left) é calculado via JS em
+       APP.posicionarDropdownStatus(), relativo à viewport. */
+    position: fixed;
     background: white;
     min-width: 150px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     border-radius: 16px;
     padding: 0.3rem 0;
-    z-index: 100;
+    z-index: 1500;
     border: 1px solid #dde9ef;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
 }
 
 .status-dropdown-content.active {
